@@ -1,7 +1,6 @@
 {
   "name": "busca-gulosa",
   "version": "1.0.0",
-  "description": "",
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
@@ -13,6 +12,9 @@
     "fstream": "^1.0.12"
   },
   "devDependencies": {
-    "@types/node": "^20.12.7"
-  }
+    "@types/node": "^20.12.7",
+    "typescript": "^5.4.5"
+  },
+  "description": "",
+  "type": "module"
 }
