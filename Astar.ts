@@ -5,11 +5,23 @@ class Cidade {
   distanciaFinal: number;
   fronteiras: Vizin[];
 
-  constructor(nome: string, distanciaFinal: number, vizinhos: Vizin[]) {
-    this.fronteiras = vizinhos;
+  constructor(nome: string, distanciaFinal: number) {
+    this.fronteiras = [];
     this.nome = nome;
     this.distanciaFinal = distanciaFinal;
   }
+  set setNome(nome: string) {
+    this.nome = nome;
+  }
+
+  set setFronteiras(fronteiras: Vizin[]) {
+    this.fronteiras = fronteiras;
+  }
+
+  set setDistanciaFinal(distanciaFinal: number) {
+    this.distanciaFinal = distanciaFinal;
+  }
+
   get getNome() {
     return this.nome;
   }
@@ -18,13 +30,19 @@ class Cidade {
     return this.distanciaFinal;
   }
 }
-class Vizin {
+class Vizin  {
   cidadeAtual: Cidade;
   distanciaAteVz: number;
 
-  constructor(cidadeAtual: Cidade, distanciaAteVz: number) {
+  constructor(cidade: Cidade, distanciaAteVz: number) {
+    this.cidadeAtual = cidade;
     this.distanciaAteVz = distanciaAteVz;
-    this.cidadeAtual = cidadeAtual;
+  }
+  get getCidadeAtual() {
+    return this.cidadeAtual.nome;
+  }
+  get getDistanciaAteVz() {
+    return this.distanciaAteVz;
   }
 }
 
@@ -33,12 +51,17 @@ class Mapa {
   arquivoCidades: string;
   arquivoVizinhos: string;
   constructor() {
-    this.cidades = [];
     this.arquivoCidades = fstream.readFileSync("dadosCidades.csv").toString();
 
     this.arquivoVizinhos = fstream.readFileSync("dadosCaminho.csv").toString();
+
+    this.cidades = [];
+  }
+  set setCidades(cidades: Cidade[]) {
+    this.cidades = cidades;
   }
   get getCidades() {
+    
     return this.cidades;
   }
 
@@ -49,13 +72,7 @@ class Mapa {
     return this.arquivoVizinhos;
   }
 
-  abreArquivo = (arq: string) => {
-    let fs = require("fs");
-    let csv = fs.readFileSync(arq).toString();
-    return csv;
-  };
-  criavizin = (arq: string,index: number) => {
-        
+  criavizin = (arq: string, index: number) => {
     interface vizinstr {
       cidadeIdx: number;
       distancia: number;
@@ -64,64 +81,60 @@ class Mapa {
 
     let linha = arq.split("\n");
     let vizinhos = linha[index].split(";");
-    
+
     let vizinho;
-    console.log(vizinhos[1].search(","));
-    if(vizinhos[1].search(",") === -1 ){
-    vizinho =  vizinhos[0];
-    vizinhostr.push({ cidadeIdx: parseInt(vizinho), distancia: parseInt(vizinho) });
-    }else{
-      vizinho =  vizinhos[1].split(",");
-      console.log(vizinho);
-    for (let i = 0; i < vizinho.length; i++) {
-      let viz = vizinho[i].split("/");
-      vizinhostr.push({ cidadeIdx: parseInt(viz[0]), distancia: parseInt(viz[1]) });
+  
+    if (vizinhos[1].search(",") === -1) {
+      vizinho = vizinhos[0];
+      vizinhostr.push({
+        cidadeIdx: parseInt(vizinho),
+        distancia: parseInt(vizinho),
+      });
+    } else {
+      vizinho = vizinhos[1].split(",");
+     
+      for (let i = 0; i < vizinho.length; i++) {
+        let viz = vizinho[i].split("/");
+        vizinhostr.push({
+          cidadeIdx: parseInt(viz[0]),
+          distancia: parseInt(viz[1]),
+        });
+      }
     }
-  }
-    console.log(vizinhostr);
+   
     return vizinhostr;
-  }
+  };
+
   criaPais(arquivo: string) {
+    let linhascity = arquivo.split("\n");
 
+    for (let i = 1; i < linhascity.length - 1; i++) {
+      let nomecity = linhascity[i].split(";")[0].toString();
+      let distcity = parseInt(linhascity[i].split(";")[1]);
 
-    var linhaslig = this.arquivoVizinhos.split("\n");
-    let vizinhos =  linhaslig[0].split(";");
-    let linhascity = this.arquivoCidades.split("\n");
-     for (let i = 2; i < linhaslig.length; i++) {
-       let linha = linhaslig[i].split(";");
-  //     for (let j = )
-    //   let vizin
- //       let cidade = new Cidade(linha[0], parseInt(linha[1]), []);
-  //     let pais = new Pais(linha[0], linha[1], linha[2], linha[3]);
-   //    paises.push(pais);
-     }
- //    return paises;
+      this.cidades.push(new Cidade(nomecity, distcity));
+    }
+    return this.cidades;
   }
   carregaMapa = () => {
-    let fs = require("fs");
-    let csvCidade = this.abreArquivo("dadosCidades.csv");
-    let csvVizin = this.abreArquivo("dadosCaminho.csv");
-    let linhasCidade = csvCidade.split("\n");
-    let cidades: Cidade[] = [];
-    let vizinhos: Vizin[] = [];
-    for (let i = 1; i < linhasCidade.length - 1; i++) {
-      let linha = linhasCidade[i].split(";");
-      // let cidade = new Cidade(linha[0], parseInt(linha[1]));
-      //cidades.push(cidade);
-    }
-    this.cidades = cidades;
-    console.log(
-      "Mapa carregado com sucesso!\n" +
-        this.cidades.map((c) => c.nome + "->" + c.distanciaFinal + "\n")
-    );
+    this.criaPais(this.arquivoCidades);
+    console.log(this.getCidades);
+    
+    this.getCidades.map((c, index) => {
+      console.log(index);
+      this.criavizin(this.arquivoVizinhos, index+1 ).forEach((v) => {
+    
+        c.fronteiras.push(new Vizin(this.getCidades[v.cidadeIdx-2 ], v.distancia));
+      });
+    });
+
+  
   };
 }
- let mapa = new Mapa();
+let mapa = new Mapa();
 
- let csvizin = mapa.getArquivoVizinhos;
- console.log(csvizin);
-console.log(mapa.criavizin(csvizin,1));
+let csvizin = mapa.getArquivoVizinhos;
+let csvcity = mapa.getArquivoCidades;
+mapa.carregaMapa();
+console.log(mapa.getCidades.filter((c) => c.getNome === "Oradea")[0].fronteiras.map((f) => f.getCidadeAtual + " " + f.getDistanciaAteVz));
 
-// let linhaslig = mapa.arquivoCidades.split("\n");
-// console.log(linhaslig.length);
-//new Mapa().carregaMapa();
