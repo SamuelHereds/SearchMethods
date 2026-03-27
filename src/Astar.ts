@@ -1,4 +1,19 @@
-import * as fstream from "fs";
+import * as fs from 'fs';
+import * as path from 'path';
+
+// Acessando o diretório do arquivo em um módulo ES usando import.meta.url
+const dirname = path.dirname(new URL(import.meta.url).pathname);
+// No Windows, o caminho incluirá uma barra à frente, que precisa ser removida
+const correctedDirname = process.platform === 'win32' ? dirname.substring(1) : dirname;
+
+// Utilizando os caminhos corrigidos para acessar os arquivos CSV
+const dadosCidades = fs.readFileSync(path.join(correctedDirname, '../data/dadosCidades.csv'), 'utf-8');
+const dadosCaminho = fs.readFileSync(path.join(correctedDirname, '../data/dadosCaminho.csv'), 'utf-8');
+
+console.log("dados cidades:");
+console.log(dadosCidades);
+console.log("dados caminhos:");
+console.log(dadosCaminho);
 
 class Cidade {
   nome: string;
@@ -34,9 +49,9 @@ class Mapa {
   arquivoVizinhos: string;
   constructor() {
     this.cidades = [];
-    this.arquivoCidades = fstream.readFileSync("dadosCidades.csv").toString();
+    this.arquivoCidades = fs.readFileSync(path.join(correctedDirname, '../data/dadosCidades.csv')).toString();
+    this.arquivoVizinhos = fs.readFileSync(path.join(correctedDirname, '../data/dadosCaminho.csv')).toString();
 
-    this.arquivoVizinhos = fstream.readFileSync("dadosCaminho.csv").toString();
   }
   get getCidades() {
     return this.cidades;
